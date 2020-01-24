@@ -30,7 +30,7 @@ def get_drinks():
     try:
         drinks = Drink.query.all()
 
-        if drinks is None:
+        if not drinks:
             abort(404)
 
         drinks = [drink.short() for drink in drinks]
@@ -49,9 +49,30 @@ def get_drinks():
     GET /drinks-detail
         it should require the 'get:drinks-detail' permission
         it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
+    returns status code 200 and json {"success": True, "drinks": drinks} where 
+    drinks is the list of drinks or appropriate status code indicating 
+    reason for failure
 '''
+
+
+@app.route('/drinks-detail', methods=['GET'])
+# @requires_auth('get:drinks-detail')
+def get_drink_details():
+    try:
+        drinks = Drink.query.all()
+
+        if not drinks:
+            abort(404)
+
+        drinks = [drink.long() for drink in drinks]
+
+        return jsonify({
+            'success': True,
+            'drinks': drinks
+        }), 200
+
+    except Exception as error:
+        raise error
 
 
 '''
@@ -60,9 +81,37 @@ def get_drinks():
         it should create a new row in the drinks table
         it should require the 'post:drinks' permission
         it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
-        or appropriate status code indicating reason for failure
+    returns status code 200 and json {"success": True, "drinks": drink} where 
+    drink an array containing only the newly created drink or appropriate 
+    status code indicating reason for failure
 '''
+
+
+@app.route('/drinks', methods=['POST'])
+# @requires_auth('post:drinks')
+def create_drink():
+    try:
+        recipe = json.loads(request.data)['recipe']
+        title = json.loads(request.data)['title']
+
+        if not recipe or title:
+            abort(404)
+
+        drink = Drink(
+            title=title,
+            recipe=json.dumps(recipe)
+        )
+        drink.insert()
+
+        return jsonify({
+            'success': True,
+            'drinks': drink.long()
+        }), 201
+
+    except exc.SQLAlchemyError:
+        abort(422)
+    except Exception as error:
+        raise error
 
 
 '''
@@ -73,8 +122,9 @@ def get_drinks():
         it should update the corresponding row for <id>
         it should require the 'patch:drinks' permission
         it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
-        or appropriate status code indicating reason for failure
+    returns status code 200 and json {"success": True, "drinks": drink} where 
+    drink an array containing only the updated drink or appropriate status 
+    code indicating reason for failure
 '''
 
 
@@ -85,15 +135,18 @@ def get_drinks():
         it should respond with a 404 error if <id> is not found
         it should delete the corresponding row for <id>
         it should require the 'delete:drinks' permission
-    returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
-        or appropriate status code indicating reason for failure
+    returns status code 200 and json {"success": True, "delete": id} where id
+     is the id of the deleted record or appropriate status code indicating 
+     reason for failure
 '''
 
 
-## Error Handling
+# Error Handling
 '''
 Example error handling for unprocessable entity
 '''
+
+
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
