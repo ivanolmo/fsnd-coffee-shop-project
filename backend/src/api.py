@@ -173,6 +173,26 @@ def edit_drink(jwt, drink_id):
 '''
 
 
+@app.route('/drinks/<int:drink_id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drink(jwt, drink_id):
+    try:
+        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+
+        if not drink:
+            abort(404)
+
+        drink.delete()
+
+        return jsonify({
+            'success': True,
+            'delete': drink_id
+        }), 200
+
+    except exc.SQLAlchemyError:
+        abort(422)
+    except Exception as error:
+        raise error
 
 
 # Error Handling
