@@ -91,15 +91,15 @@ def get_drink_details(jwt):
 @requires_auth('post:drinks')
 def create_drink(jwt):
     try:
-        if len(json.loads(request.data)) != 2:
-            abort(400)
+        new_drink = request.get_json()
 
         title = json.loads(request.data)['title']
-        recipe = json.loads(request.data)['recipe']
+        if title == '':
+            abort(400)
 
         drink = Drink(
-            title=title,
-            recipe=json.dumps(recipe)
+            title=new_drink.get('title'),
+            recipe=json.dumps(new_drink.get('recipe'))
         )
         drink.insert()
 
