@@ -87,6 +87,33 @@ def get_drink_details(jwt):
 '''
 
 
+@app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
+def create_drink(jwt):
+    try:
+        if len(json.loads(request.data)) != 2:
+            abort(400)
+
+        title = json.loads(request.data)['title']
+        recipe = json.loads(request.data)['recipe']
+
+        drink = Drink(
+            title=title,
+            recipe=json.dumps(recipe)
+        )
+        drink.insert()
+
+        return jsonify({
+            'success': True,
+            'drinks': drink.long()
+        }), 201
+
+    except exc.SQLAlchemyError:
+        abort(422)
+    except Exception as error:
+        raise error
+
+
 '''
 @TODO implement endpoint
     PATCH /drinks/<id>
@@ -100,39 +127,6 @@ def get_drink_details(jwt):
     code indicating reason for failure
 '''
 
-
-@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
-@requires_auth('patch:drinks')
-def edit_drink(jwt, drink_id):
-    try:
-        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
-
-        if not drink:
-            abort(404)
-
-        drink_data = request.get_json()
-
-        title = drink_data.get('title')
-        recipe = drink_data.get('recipe')
-
-        if title:
-            drink.title = title
-        if recipe:
-            drink.recipe = recipe
-
-        drink.update()
-
-        return jsonify({
-            'success': True,
-            'drinks': [drink.long()]
-        }), 200
-
-    except exc.SQLAlchemyError:
-        abort(422)
-    except Exception as error:
-        raise error
-
-
 '''
 @TODO implement endpoint
     DELETE /drinks/<id>
@@ -144,6 +138,8 @@ def edit_drink(jwt, drink_id):
      is the id of the deleted record or appropriate status code indicating 
      reason for failure
 '''
+
+
 
 
 # Error Handling
