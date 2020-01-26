@@ -57,10 +57,13 @@ class Drink(db.Model):
     short()
         short form representation of the Drink model
     '''
+
     def short(self):
         print(json.loads(self.recipe))
-        short_recipe = [{'color': r['color'], 'parts': r['parts']} for r in
-                        json.loads(self.recipe)]
+        short_recipe = [
+            {'color': r['color'], 'parts': r['parts']} for r in
+            json.loads(self.recipe)
+        ]
         return {
             'id': self.id,
             'title': self.title,
@@ -71,6 +74,7 @@ class Drink(db.Model):
     long()
         long form representation of the Drink model
     '''
+
     def long(self):
         return {
             'id': self.id,
@@ -87,6 +91,7 @@ class Drink(db.Model):
             drink = Drink(title=req_title, recipe=req_recipe)
             drink.insert()
     '''
+
     def insert(self):
         db.session.add(self)
         db.session.commit()
@@ -99,6 +104,7 @@ class Drink(db.Model):
             drink = Drink(title=req_title, recipe=req_recipe)
             drink.delete()
     '''
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()

@@ -210,6 +210,24 @@ def not_found(error):
     }), 404
 
 
+@app.errorhandler(401)
+def unauthorized(error):
+    return jsonify({
+        'success': False,
+        'error': 401,
+        'message': error.description
+    }), 401
+
+
+@app.errorhandler(403)
+def unauthorized(error):
+    return jsonify({
+        'success': False,
+        'error': 403,
+        'message': error.description
+    }), 403
+
+
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
@@ -246,7 +264,10 @@ def internal_server_error(error):
     }), 500
 
 
-'''
-@TODO implement error handler for AuthError
-    error handler should conform to general task above 
-'''
+@app.errorhandler(AuthError)
+def authentication_error(error):
+    return jsonify({
+        'success': False,
+        'error': error.status_code,
+        'message': error.error
+    })
