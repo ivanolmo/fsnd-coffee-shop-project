@@ -11,7 +11,7 @@ app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
-db_drop_and_create_all()
+# db_drop_and_create_all()
 
 # ROUTES
 '''
@@ -56,8 +56,8 @@ def get_drinks():
 
 
 @app.route('/drinks-detail', methods=['GET'])
-# @requires_auth('get:drinks-detail')
-def get_drink_details():
+@requires_auth('get:drinks-detail')
+def get_drink_details(jwt):
     try:
         drinks = Drink.query.all()
 
@@ -87,33 +87,6 @@ def get_drink_details():
 '''
 
 
-@app.route('/drinks', methods=['POST'])
-# @requires_auth('post:drinks')
-def create_drink():
-    try:
-        recipe = json.loads(request.data)['recipe']
-        title = json.loads(request.data)['title']
-
-        if not recipe or title:
-            abort(404)
-
-        drink = Drink(
-            title=title,
-            recipe=json.dumps(recipe)
-        )
-        drink.insert()
-
-        return jsonify({
-            'success': True,
-            'drinks': drink.long()
-        }), 201
-
-    except exc.SQLAlchemyError:
-        abort(422)
-    except Exception as error:
-        raise error
-
-
 '''
 @TODO implement endpoint
     PATCH /drinks/<id>
@@ -126,6 +99,38 @@ def create_drink():
     drink an array containing only the updated drink or appropriate status 
     code indicating reason for failure
 '''
+
+
+@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def edit_drink(jwt, drink_id):
+    try:
+        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+
+        if not drink:
+            abort(404)
+
+        drink_data = request.get_json()
+
+        title = drink_data.get('title')
+        recipe = drink_data.get('recipe')
+
+        if title:
+            drink.title = title
+        if recipe:
+            drink.recipe = recipe
+
+        drink.update()
+
+        return jsonify({
+            'success': True,
+            'drinks': [drink.long()]
+        }), 200
+
+    except exc.SQLAlchemyError:
+        abort(422)
+    except Exception as error:
+        raise error
 
 
 '''
@@ -190,23 +195,6 @@ def internal_server_error(error):
         "error": 500,
         "message": error.description
     }), 500
-
-
-'''
-@TODO implement error handlers using the @app.errorhandler(error) decorator
-    each error handler should return (with approprate messages):
-             jsonify({
-                    "success": False, 
-                    "error": 404,
-                    "message": "resource not found"
-                    }), 404
-
-'''
-
-'''
-@TODO implement error handler for 404
-    error handler should conform to general task above 
-'''
 
 
 '''
