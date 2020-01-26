@@ -127,6 +127,39 @@ def create_drink(jwt):
     code indicating reason for failure
 '''
 
+
+@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def edit_drink(jwt, drink_id):
+    try:
+        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+
+        if not drink:
+            abort(404)
+
+        drink_data = request.get_json()
+
+        title = drink_data.get('title')
+        recipe = drink_data.get('recipe')
+
+        if title:
+            drink.title = title
+        if recipe:
+            drink.recipe = recipe
+
+        drink.update()
+
+        return jsonify({
+            'success': True,
+            'drinks': [drink.long()]
+        }), 200
+
+    except exc.SQLAlchemyError:
+        abort(422)
+    except Exception as error:
+        raise error
+
+
 '''
 @TODO implement endpoint
     DELETE /drinks/<id>
