@@ -137,16 +137,16 @@ def edit_drink(jwt, drink_id):
         if not drink:
             abort(404)
 
-        drink_data = request.get_json()
+        title = json.loads(request.data)['title']
+        if title == '':
+            abort(400)
 
-        title = drink_data.get('title')
-        recipe = drink_data.get('recipe')
+        recipe = json.loads(request.data)['recipe']
+        if not isinstance(recipe, list):
+            abort(400)
 
-        if title:
-            drink.title = title
-        if recipe:
-            drink.recipe = recipe
-
+        drink.title = title
+        drink.recipe = json.dumps(recipe)
         drink.update()
 
         return jsonify({
@@ -154,8 +154,8 @@ def edit_drink(jwt, drink_id):
             'drinks': [drink.long()]
         }), 200
 
-    except exc.SQLAlchemyError:
-        abort(422)
+    # except exc.SQLAlchemyError:
+    #     abort(422)
     except Exception as error:
         raise error
 
@@ -270,4 +270,4 @@ def authentication_error(error):
         'success': False,
         'error': error.status_code,
         'message': error.error
-    }), 401
+    }), error.status_code
