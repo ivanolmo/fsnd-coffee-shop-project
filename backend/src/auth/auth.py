@@ -9,6 +9,7 @@ AUTH0_DOMAIN = 'udacitycoffee.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'coffeeshop'
 
+
 # AuthError Exception
 '''
 AuthError Exception
