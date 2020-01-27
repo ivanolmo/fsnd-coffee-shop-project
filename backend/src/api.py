@@ -133,6 +133,7 @@ def create_drink(jwt):
 def edit_drink(jwt, drink_id):
     try:
         drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+        body = request.get_json()
 
         if not drink:
             abort(404)
@@ -140,13 +141,14 @@ def edit_drink(jwt, drink_id):
         title = json.loads(request.data)['title']
         if title == '':
             abort(400)
-
-        recipe = json.loads(request.data)['recipe']
-        if not isinstance(recipe, list):
-            abort(400)
-
         drink.title = title
-        drink.recipe = json.dumps(recipe)
+
+        if 'recipe' in body:
+            recipe = json.loads(request.data)['recipe']
+            if not isinstance(recipe, list):
+                abort(400)
+            drink.recipe = json.dumps(recipe)
+
         drink.update()
 
         return jsonify({
