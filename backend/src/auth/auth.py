@@ -1,7 +1,7 @@
 import json
+
 from functools import wraps
 from urllib.request import urlopen
-
 from flask import request, abort
 from jose import jwt
 
